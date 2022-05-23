@@ -119,7 +119,12 @@ function addDishes(plate) {
     // UPDATING SUMMARY
     const content = document.querySelector('#summary .contenido');
     cleanSummary(content);
-    showSummary(content);
+
+    if(client.order.length) {
+        showSummary(content);
+        showTip(content);
+    }
+    else resetSummary(content);
 }
 
 function cleanSummary(content){     while(content.firstChild) content.removeChild(content.firstChild);     }
@@ -131,7 +136,7 @@ function showSummary(content){
     // HEADING
     const heading = document.createElement('h3');
     heading.classList.add('my-4', 'text-center');
-    heading.textContent = 'SUMMARY HEADING HERE';
+    heading.textContent = "Client's order";
     summary.appendChild(heading);
 
     // TABLE
@@ -228,5 +233,151 @@ function deleteDish(id){
 
     const content = document.querySelector('#summary .contenido');
     cleanSummary(content);
-    showSummary(content);
+
+    if(client.order.length) {
+        showSummary(content);
+        showTip(content);
+    }
+    else resetSummary(content);
+
+    const inputId = `#product-${id}`;
+    const resetInput = document.querySelector(inputId);
+    resetInput.value = 0;
+}
+
+function resetSummary(summary) {
+    const paragraph = document.createElement('p');
+
+    paragraph.classList.add('text-center');
+    paragraph.textContent = 'Add order elements';
+    summary.appendChild(paragraph);
+}
+
+function showTip(summary){
+    const form = document.createElement('div');
+    form.classList.add('col-md-6', 'ownForm');
+    summary.appendChild(form);
+
+    // HEADING
+    const heading = document.createElement('h3');
+    heading.classList.add('my-4', 'text-center');
+    heading.textContent = 'Tips';
+
+    // RADIO BUTTON 10
+    const radio10 = document.createElement('input');
+    radio10.classList.add('form-check-input');
+    radio10.type = 'radio';
+    radio10.name = 'tip';
+    radio10.value = '0.1';
+    radio10.onclick = calculateTip;
+
+    const radio10Label = document.createElement('label');
+    radio10Label.classList.add('form-check-label');
+    radio10Label.textContent = '10%';
+    
+    const radio10Div = document.createElement('div');
+    radio10Div.classList.add('form-check');
+    radio10Div.appendChild(radio10);
+    radio10Div.appendChild(radio10Label);
+    
+    // RADIO BUTTON 25
+    const radio25 = document.createElement('input');
+    radio25.classList.add('form-check-input');
+    radio25.type = 'radio';
+    radio25.name = 'tip';
+    radio25.value = '0.25';
+    radio25.onclick = calculateTip;
+
+    const radio25Label = document.createElement('label');
+    radio25Label.classList.add('form-check-label');
+    radio25Label.textContent = '25%';
+    
+    const radio25Div = document.createElement('div');
+    radio25Div.classList.add('form-check');
+    radio25Div.appendChild(radio25);
+    radio25Div.appendChild(radio25Label);
+
+    // RADIO BUTTON 50
+    const radio50 = document.createElement('input');
+    radio50.classList.add('form-check-input');
+    radio50.type = 'radio';
+    radio50.name = 'tip';
+    radio50.value = '0.5';
+    radio50.onclick = calculateTip;
+
+    const radio50Label = document.createElement('label');
+    radio50Label.classList.add('form-check-label');
+    radio50Label.textContent = '50%';
+    
+    const radio50Div = document.createElement('div');
+    radio50Div.classList.add('form-check');
+    radio50Div.appendChild(radio50);
+    radio50Div.appendChild(radio50Label);
+    
+    // FORM DIV (LOOKS BETTER)
+    const divForm = document.createElement('div');
+    divForm.classList.add('card', 'py-5', 'px-3', 'shadow');
+    divForm.appendChild(heading);
+    divForm.appendChild(radio10Div);
+    divForm.appendChild(radio25Div);
+    divForm.appendChild(radio50Div);
+
+    form.appendChild(divForm);
+}
+
+function calculateTip(){
+    const tip = document.querySelector("[name='tip']:checked").value;
+    const { order } = client;
+    let total = 0;
+    let subtotal = 0;
+    
+    order.forEach( dish => subtotal += subtotalCalculation(Number(dish.price), Number(dish.quantity)) );
+
+    total = (subtotal * tip) + subtotal;
+    
+    showTipNumbers(total, subtotal, tip);
+}
+
+function showTipNumbers(total, subtotal, tip){
+    const totalsDiv = document.createElement('div');
+    totalsDiv.classList.add('total-pay', 'my-4');
+
+    // SUBTOTAL
+    const subtotalParagraph = document.createElement('p');
+    subtotalParagraph.classList.add('fs-3', 'fw-bold', 'mt-3');
+    subtotalParagraph.textContent = 'Subtotal: '
+    totalsDiv.appendChild(subtotalParagraph);
+    
+    const subtotalSpan = document.createElement('span');
+    subtotalSpan.classList.add('fw-normal');
+    subtotalSpan.textContent = `$${subtotal}`;
+    subtotalParagraph.appendChild(subtotalSpan);
+
+    // TIP
+    const tipParagraph = document.createElement('p');
+    tipParagraph.classList.add('fs-3', 'fw-bold', 'mt-3');
+    tipParagraph.textContent = 'Tip: '
+    totalsDiv.appendChild(tipParagraph);
+    
+    const tipSpan = document.createElement('span');
+    tipSpan.classList.add('fw-normal');
+    tipSpan.textContent = `$${tip * subtotal}`;
+    tipParagraph.appendChild(tipSpan);
+
+    // TOTAL
+    const totalParagraph = document.createElement('p');
+    totalParagraph.classList.add('fs-3', 'fw-bold', 'mt-3');
+    totalParagraph.textContent = 'Total: '
+    totalsDiv.appendChild(totalParagraph);
+    
+    const totalSpan = document.createElement('span');
+    totalSpan.classList.add('fw-normal');
+    totalSpan.textContent = `$${total}`;
+    totalParagraph.appendChild(totalSpan);
+
+    const totalPayDiv = document.querySelector('.total-pay');
+    if(totalPayDiv) totalPayDiv.remove();
+
+    const ownFormDiv = document.querySelector('.ownForm > div');
+    ownFormDiv.appendChild(totalsDiv);
 }
